@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 
-// Détecter l'URL du backend automatiquement
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || window.location.origin.replace('5173', '5000');
+// Utiliser la variable d'environnement, avec fallback pour le dev
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
 
 export const socket = io(SOCKET_URL, {
   autoConnect: true,
