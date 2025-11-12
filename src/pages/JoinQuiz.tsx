@@ -1,14 +1,20 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { socket } from "../utils/socket";
 import type { Player } from "../utils/type";
 import QuestionTrueFalse from "../components/QuestionTrueFalse";
 import QuestionMultipleChoice from "../components/QuestionMultipleChoice";
 import QuestionMultipleSelect from "../components/QuestionMultipleSelect";
 import QuestionShortAnswer from "../components/QuestionShortAnswer";
+import QRCodeGenerator from "../components/QRCodeGenerator";
 
 export default function JoinQuiz() {
+  const [searchParams] = useSearchParams();
   const [pseudo, setPseudo] = useState('');
-  const [roomCode, setRoomCode] = useState('');
+  const [roomCode, setRoomCode] = useState(() => {
+    // Pré-remplir depuis l'URL si présent
+    return searchParams.get('code') || '';
+  });
   const [players, setPlayers] = useState<Player[]>([]);
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState("");
@@ -249,6 +255,14 @@ export default function JoinQuiz() {
                 {error}
               </div>
             )}
+
+            {/* QR Code pour rejoindre */}
+            <div className="mb-8 flex justify-center">
+              <QRCodeGenerator 
+                size={250}
+                showDownloadButton={false}
+              />
+            </div>
             
             <form onSubmit={handleJoin} className="space-y-6">
               <div>
@@ -353,23 +367,50 @@ export default function JoinQuiz() {
                 {currentQuestion?.questionText}
               </h2>
 
-              <div className="space-y-3">
-                {currentQuestion?.answers?.map((answer: any, index: number) => (
-                  <div
-                    key={answer.id}
-                    className="bg-white p-4 rounded-lg border-2 border-gray-300"
-                  >
+              {currentQuestion?.type === "TRUE_FALSE" ? (
+                // Pour Vrai/Faux, afficher les deux options
+                <div className="space-y-3">
+                  <div className="bg-white p-4 rounded-lg border-2 border-gray-300">
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-lg font-bold text-gray-700">
-                        {String.fromCharCode(65 + index)}
+                        A
                       </div>
                       <span className="text-lg font-medium text-gray-800">
-                        {answer.answerText || currentQuestion.correctAnswerText}
+                        Vrai
                       </span>
                     </div>
                   </div>
-                ))}
-              </div>
+                  <div className="bg-white p-4 rounded-lg border-2 border-gray-300">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-lg font-bold text-gray-700">
+                        B
+                      </div>
+                      <span className="text-lg font-medium text-gray-800">
+                        Faux
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                // Pour les autres types, afficher les answers normalement
+                <div className="space-y-3">
+                  {currentQuestion?.answers?.map((answer: any, index: number) => (
+                    <div
+                      key={answer.id}
+                      className="bg-white p-4 rounded-lg border-2 border-gray-300"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-lg font-bold text-gray-700">
+                          {String.fromCharCode(65 + index)}
+                        </div>
+                        <span className="text-lg font-medium text-gray-800">
+                          {answer.answerText || currentQuestion.correctAnswerText}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </>
         ) : canAnswer && currentQuestion ? (
