@@ -9,16 +9,55 @@ interface Props {
 }
 
 export default function QuestionTrueFalse({ question, questionIndex, totalQuestions, onAnswer, hasAnswered, selectedAnswer, timeRemaining }: Props) {
-  // Trouver les réponses en supportant plusieurs formats (Vrai/vrai/True/true)
-  const trueAnswer = question.answers?.find((a: any) => {
-    const text = a.answerText?.toLowerCase();
+  // Chercher les réponses Vrai/Faux dans le tableau answers
+  let trueAnswer = question.answers?.find((a: any) => {
+    const text = a.answerText?.toLowerCase().trim();
     return text === "vrai" || text === "true";
   });
   
-  const falseAnswer = question.answers?.find((a: any) => {
-    const text = a.answerText?.toLowerCase();
+  let falseAnswer = question.answers?.find((a: any) => {
+    const text = a.answerText?.toLowerCase().trim();
     return text === "faux" || text === "false";
   });
+
+  // Fallback: si on ne trouve qu'une réponse, on crée l'autre
+  if (question.answers && question.answers.length === 1) {
+    const existingAnswer = question.answers[0];
+    const isTrue = existingAnswer.answerText?.toLowerCase().trim() === "true" || 
+                   existingAnswer.answerText?.toLowerCase().trim() === "vrai";
+    
+    if (isTrue) {
+      trueAnswer = existingAnswer;
+      falseAnswer = {
+        id: existingAnswer.id + 1000,
+        answerText: "Faux",
+        isCorrect: false
+      };
+    } else {
+      falseAnswer = existingAnswer;
+      trueAnswer = {
+        id: existingAnswer.id + 1000,
+        answerText: "Vrai",
+        isCorrect: false
+      };
+    }
+  }
+  
+  // Dernier fallback: créer les deux réponses si elles n'existent pas
+  if (!trueAnswer && !falseAnswer) {
+    trueAnswer = {
+      id: 1,
+      answerText: "Vrai",
+      isCorrect: question.correctAnswerText?.toLowerCase().trim() === "vrai" || 
+                 question.correctAnswerText?.toLowerCase().trim() === "true"
+    };
+    falseAnswer = {
+      id: 2,
+      answerText: "Faux",
+      isCorrect: question.correctAnswerText?.toLowerCase().trim() === "faux" || 
+                 question.correctAnswerText?.toLowerCase().trim() === "false"
+    };
+  }
 
   const handleTrueClick = () => {
     if (trueAnswer) {
