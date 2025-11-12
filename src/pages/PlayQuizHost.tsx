@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { socket } from "../utils/socket";
 import type { Player, PendingAnswer } from "../utils/type";
+import QRCodeGenerator from "../components/QRCodeGenerator";
 
 export default function PlayQuizHost() {
   const { id } = useParams<{ id: string }>();
@@ -196,6 +197,15 @@ export default function PlayQuizHost() {
               </p>
             </div>
 
+            {/* QR Code pour rejoindre */}
+            <div className="mb-8 flex justify-center">
+              <QRCodeGenerator 
+                quizCode={roomCode}
+                size={250}
+                showDownloadButton={true}
+              />
+            </div>
+
             <div className="mb-8">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-bold text-gray-800">
@@ -216,14 +226,22 @@ export default function PlayQuizHost() {
                   {players.map((player, index) => (
                     <div
                       key={player.id}
-                      className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg p-4 flex items-center space-x-3 transform transition hover:scale-105"
+                      className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg p-4 transform transition hover:scale-105 shadow-lg"
                     >
-                      <div className="bg-blue-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold">
-                        {index + 1}
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div className="bg-blue-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm">
+                          {index + 1}
+                        </div>
+                        <span className="font-semibold text-gray-800 flex-1 truncate">
+                          {player.pseudo}
+                        </span>
                       </div>
-                      <span className="font-semibold text-gray-800">
-                        {player.pseudo}
-                      </span>
+                      <div className="bg-white rounded-lg p-3 text-center">
+                        <p className="text-2xl font-bold text-blue-600">
+                          {player.score}
+                        </p>
+                        <p className="text-xs text-gray-600">points</p>
+                      </div>
                     </div>
                   ))}
                 </div>
